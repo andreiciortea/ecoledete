@@ -1,0 +1,165 @@
+/**
+* NXT API with TCP/IP Server
+* Author : Jordan Martin
+* */
+
+/* Communication schema
+                            +-----------------------------+
+                            |       Server computer       |
+                            |-----------------------------|
+                            |                             |
+   +-------------+  TCP/IP  |     +-----------------+     |BT/USB  +-------------+
+   | Client      |+-------------->|  TCP/IP         +------------->|  NXT robot  |
+   | application |<--------------+|         server  |<------------+|             |
+   +-------------+          |     +-----------+-----+     |        +-------------+
+                            |              ^  |           |
+                            |              |  v           |
+                            |        +-----+------+       |
+                            |        |  NXT API   |       |
+                            |        +------------+       |
+                            |              ^              |
+                            |              |              |
+                            |   +---------------------+   |
+                            |   | Configurations file |   |
+                            |   |  +robot.conf        |   |
+                            |   |  +server.conf       |   |
+                            |   +---------------------+   |
+                            +-----------------------------+
+
+/!\ The API is based on LeJos which run only with java 32bits. So you need to use JRE 32bits (>= 1.7) to launch the server (include in the api package folder (linux and windows))
+/!\ [Windows user] You need to install, on the computer which run the server, the NXT usb driver which is locate in "NXT usb drivers" folder.
+/!\ [Linux user] If the server is on linux machine : - You can't use the usb communication mode.
+												     - To use the bluetooth communication you must install the BlueZ lib (http://www.bluez.org/) and libbluetooth-dev
+
+The NXT API is contained in a TCP/IP server (native SocketServer of java).
+The communication between your application and the API is made by JSON message so you can use any programming language.
+The server communicate with the server over bluetooth or usb (You must choose the mode when you start the NXT program on the brick.
+
+To start up the NXT program (on the brick) just push the orange button -> Select "Run default". When the program is starded, it ask you the communication mode.
+
+----------------------------------
+Configure and start TCP/IP server 
+----------------------------------
+By default, the server listen on 4444 port but you can change it by create the file server.conf in you user home dir (c:\users\USERNAME\server.conf or /home/USERHOMEDIR/server.conf) and putting "port:YOUR_PORT" inside.
+An example of this file is in the "Default configurations files".
+To start the server go to the "NXTSocketServer" folder and run the following command : java -jar NXTSocketServer.jar
+
+When the server is started you can connect your application at the server IP on the specified port or 4444 port
+During your test, look at the server console to view some debug message
+
+/*-------------------------------------------------------
+Configuration, connection and communication with the NXT
+---------------------------------------------------------
+
+---- CONFIGURATION
+
+First you should configure your robot configuration : 
+Create the file "robot.conf" in the user home dir of the server. (c:\users\USERNAME\robot.conf or /home/USERHOMEDIR/robot.conf)
+In this file, you will have to configure the name of your NXT and the ports of sensors and motors that you want to use.
+The structure is : property:value
+
+Example of configuration file :
+	nxtName:NXT
+	motorRightPort:A
+	motorLeftPort:C
+	ultraSonicSensorPort:1
+	compassSensorPort:2
+	colorSensorPort:3
+	touchSensorPort:4
+
+---- CONNECTION
+	
+When you are connected to the websocket server, you must established the connection between the server and the nxt. 
+To do this, simply send : {action: "connect", mode: "usb"}. Note that the mode can be "usb" or "bt" for bluetooth.
+This command return {status: "connected", message: "You are now connected to the nxt"} or {status: "disconnected", message: "ERROR_MESSAGE"}
+*Note that the connection over bluetooth is slower than usb (especially for the connection).
+
+
+---- COMMUNICATION
+
+Now you are connected to the NXT, you can run the following commands :
+
+
+/* Connection to the nxt */
+{"action": "connect", "mode": /* USB|BT */]}
+
+/* Disconnection to the nxt */
+{"action": "disconnect"}
+
+/* -> Motor command
+ * 
+ * One motor command can command one or two motors independently {right|left}. It also possible to send the same command to the two motors {both}.
+ * 5 modes of use : 
+ *     START - Make the motor run forward (speed > 0) or backward (speed < 0) at the specified speed. 
+ *     BLOCK - Make the motor stop and hold the position
+ *     FLOAT - Make the motor stop without braking and not hold the position
+ *     STEP  - Make the motor run the rotation (in deg) at the specified speed. 
+ *			   WARNING : If other motors commands are sent, it cancel the rotation step
+ *     CHANGE - Add the specified speed to the current speed of the motor (speed can be positive or negative)
+ * 
+ * The maximum speed is about 700 deg/s
+ * The server reply "Ok" when you send this command
+ */
+{
+	"motor_command" :		
+        [
+            {
+                "name"	: /* {left|right|both} */,
+                "action": /* {start|stop|change|step} */,
+                "speed"	: /* Integer value in deg/sec */,
+                "step"	: /* Integer value in deg */
+            },
+            {
+                "name"	: /* {left|right} */,
+                "action": /* {start|stop|change|step} */,
+                "speed"	: /* Integer value in deg/sec */,
+                "step"	: /* Integer value in deg */
+            }
+        ]		
+}
+/* Eg: Go forward : {"motor_command":[{"name": "both", "action": "start",  "speed": 100}]} 
+/* Eg: Half turn  : {"motor_command":[ {"name": "right", "action": "step",  "step": -360, "speed": 500} , {"name": "left", "action": "step",  "step": 360, "speed": 500} ]} 
+
+
+
+/* -> Sensor request
+ *
+ * List of sensors : 
+ *     - ultrasonic   : Get the distance to the obstacle in cm. Value range : 0 -> 254. 
+  * 					WARNING : If there aren't obstacle ahead him or if the sensor is against a obstacle the value is 255.
+ *     - sound        : Get sound volume in DB
+ *	   - color		  : Get the RGB component of the floor.
+ *						Return the 3 components in a object like this : {"sensor_response:" [{"name": "color", "value": {"r": 100, "g": 30, "b": 21}}] }. The values of colors can be -1 if an error occurred.
+ *	   - compass      : Get the directional heading in degrees (0 to 359.9) from North
+ *	   - touch		  : Get the state of the touch sensor : 1 if it pressed, 0 otherwise.
+ *	   - acceleromter : Get acceleration along x, y and z axis. 
+ *						Return : {sensor_request: [{"name": "acceleromter", "value": {"x": 100, "y": 30, "z": 21}}]}. The values can be -1 if an error occurred.
+ * 
+ * You can send a request for several sensors : 
+ * Eg. {sensor_request:[{name: "touch"},{name: "color"}]} 
+ *      give : {sensor_response: [ {"name": "touch", "value": 1} , {"name": "color", "value": {"r": 100, "g": 30, "b": 21}} ] }
+ */
+{
+	"sensor_request" :		
+        [
+            {
+                "name" : /* String value : Name of sensor */,
+            },
+            {
+                /* ... */
+            }
+        ]		
+}
+
+/* Response format of a sensor_request */
+{
+	"sensor_response" : 		
+        [
+            {
+                "name"  : /* String value : Name of sensor */,
+                "value" : /* Integer or array value : data of the sensor */
+            },            
+             
+			 /* ... */            
+        ]		
+}
