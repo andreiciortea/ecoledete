@@ -1,8 +1,60 @@
+<!DOCTYPE html>
 <html>
-	<head>
-		<script data-main="js/main" src="js/lib/require.js"></script>
+	<head>	
+		<meta charset="utf-8" />
+		<script data-main="js/main" src="js/lib/require.min.js"></script>
+		<link href="css/style.css" rel="stylesheet"/>
+		<link href="css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="css/jquery-ui.min.css" rel="stylesheet"/>
 	</head>
 	<body>
-		
+		<div id="server-state"></div>
+
+		<div class="row">
+                    <div class="col-md-8">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        Virtual joystick control area
+                                    </div>
+                                    <div class="col-sm-3 col-sm-offset-1">
+                                        Sensitivity : <span id="joystickSensitivityValue">x1</span>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div id="joystickSensitivitySlider"></div>
+                                    </div>
+                                </div>
+                            </div>
+                                          
+                            <div id="joystickControlArea"></div>
+                            
+                            <div class="panel-footer">
+                                <span id="axesValues">Axis values : </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                    	<p>Left line 
+                    		<select id="left-line">
+                    			<option value="red">Red</option>
+                    			<option value="green" selected>Green</option>
+                    			<option value="blue">Blue</option>
+                    		</select>
+                    	</p>
+                    	<p>Right line 
+                    		<select id="right-line">
+                    			<option value="red">Red</option>
+                    			<option value="green">Green</option>
+                    			<option value="blue" selected>Blue</option>
+                    		</select>
+                    	</p>
+                    	<p>Line : <span id="lineDetection"></span></p>
+                    	<div id="direction" value='0'></div>
+                    	<p>Obstacle : <span id="ultrasonicSensorValue"></span>
+                    	<div id="obstacle" value='??'></div>
+                    	
+                    </div>
+		</div>
 	</body>
 </html>

@@ -1,0 +1,13 @@
+#joystickControlArea{
+    height: 500px;
+    width: 100%;
+}
+
+#direction {
+	display: hidden;
+}
+
+
+#obstacle {
+	display: hidden;
+}
