@@ -1,8 +1,8 @@
 define([],
 function() {
 	
-	var defaultSpeed = 400;
-	var decreaseRate = 0.7;
+	var defaultSpeed = 100;
+	var decreaseRate = 0.4;
 
 	// Minimum obstacle distance.
 	var obstacleThreshold = 10;

@@ -4,7 +4,8 @@ function(VirtualJoystick) {
 	console.log("Virtual Joystick View Init");
 
 	var VirtualJoystickView = function(ws) {
-		var server = ws;
+		var self = this;
+		this.server = ws;
 		var joystickSensitivity = 1;
 		/* Create sensitivity slider */
 		$('#joystickSensitivitySlider').slider({
@@ -51,7 +52,7 @@ function(VirtualJoystick) {
 		    var x = joystick.deltaX();
 		    var y = joystick.deltaY();
 		    $('#axesValues').text('X: ' + x +', Y: ' + y);
-		    if (ws != null && ws.readyState == 1)
+		    //if (this.server.ws != null && this.server.ws.readyState == 1)
 			joystickControl(x, y); 
 		}
 
@@ -61,8 +62,9 @@ function(VirtualJoystick) {
 			if (leftMotorPrevSpeed != motorsSpeed[0] && rightMotorPrevSpeed != motorsSpeed[1]) {
 			leftMotorPrevSpeed = motorsSpeed[0];
 			rightMotorPrevSpeed = motorsSpeed[1];
-				  
-			server.sendCommand(
+				
+			console.log(this.server);  
+			self.server.sendCommand(
 			    { motor_command: [
 				    {name: "right", action: "start", speed: motorsSpeed[0]},
 				    {name: "left", action: "start", speed: motorsSpeed[1]}                    

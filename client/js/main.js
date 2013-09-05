@@ -19,14 +19,22 @@ require.config({
 });
 
 require(['server', 'dataProcessing', 'view/VirtualJoystickView', 'jquery', 'jquery-ui'], 
-function(Server, dataProcessing, VirtualJoystickView) {
+function(Server, DataManager, VirtualJoystickView) {
 	console.log("Init Client App");
 	
 	$('#server-state').html('Disconnected');
 
-	var server = new Server(dataProcessing);
+	var dataManager = new DataManager();
+	var server = new Server(dataManager.dataProcessing);
+	dataManager.setServer(server);
+	
 	var joystickView = new VirtualJoystickView(server);
 	
 	
-	console.log($('#direction').attr('value'));
+	$("#stop").on("click", function() {
+		console.log("STOP !");
+		server.sendCommand(
+			{motor_command:[{name: both, action: block,  speed: 0}]}
+		);
+	});
 });
