@@ -3,7 +3,7 @@ function() {
 	var Server = function(incomingData) {
 		var self = this;
 		this.isNXTConnected = false;
-		this.NXTConnectionMode = 'bt';
+		this.NXTConnectionMode = 'usb';
 		this.ws = new WebSocket("ws://127.0.0.1:8080/NXTWebSocketServer/socket");
 		//this.ws = {};
 	    

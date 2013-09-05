@@ -33,8 +33,6 @@ function(Server, DataManager, VirtualJoystickView) {
 	
 	$("#stop").on("click", function() {
 		console.log("STOP !");
-		server.sendCommand(
-			{motor_command:[{name: both, action: block,  speed: 0}]}
-		);
+		server.ws.close();
 	});
 });

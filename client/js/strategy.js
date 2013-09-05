@@ -9,11 +9,11 @@ function() {
 
 	var processState = function(state) {
 		
-		if (state.obstacle < obstacleThreshold) {
+		/*if (state.obstacle < obstacleThreshold) {
 			state = processObstacle(state);
-		} else {
+		} else {*/
 			state = processLine(state);
-		}
+		//}
 		
 		return state;
 	};

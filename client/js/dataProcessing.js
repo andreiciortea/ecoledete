@@ -2,6 +2,8 @@ define([ 'model/RobotState', 'strategy','jquery'],
 function(robotState, strategy) {
 	
 	var self;
+	var minThreshold = 130;
+	var maxThreshold = 150;
 		
 	var DataManager = function() {
 		self = this;
@@ -38,14 +40,21 @@ function(robotState, strategy) {
             		self.process = false;
             		self.state = self.strategy.processState(self.state);
             		console.log(self.state);
-            		//*
-            		self.server.sendCommand(
-				{ motor_command: [
-					    {name: "right", action: "start", speed: self.state.motors[0]},
-					    {name: "left", action: "start", speed: self.state.motors[1]}                    
+            		var cmd = { motor_command: [
+					    {name: "right", action: "start", speed: Math.round(self.state.motors[0])},
+					    {name: "left", action: "start", speed: Math.round(self.state.motors[1])}                    
 					]
-				}
-            		);//*/
+				};
+            		//*
+            		if(self.state.motors[0] != self.state.previousMotors[0] ||
+            		self.state.motors[1] != self.state.previousMotors[1]) {
+		    		console.log(cmd);
+		    		self.state.previousMotors[0] = self.state.motors[0];
+		    		self.state.previousMotors[0] = self.state.motors[0];
+		    		self.server.sendCommand(
+					cmd
+		    		);
+		    	}//*/
             	}
 	};
 
@@ -75,11 +84,12 @@ function(robotState, strategy) {
 	var proccessColorSensor = function(value) {
 		console.log(value);
 		var result = "";
-		if(value.r > 128 && value.g < 100 && value.b < 100) {
+		
+		if(value.r > maxThreshold && value.g < minThreshold && value.b < minThreshold) {
 			result = 'red';
-		} else if(value.g > 128 && value.r < 100 && value.b < 100) {
+		} else if(value.g > maxThreshold && value.r < minThreshold && value.b < minThreshold) {
 			result = 'green';
-		} else if(value.b > 128 && value.g < 100 && value.r < 100) {
+		} else if(value.b > maxThreshold && value.g < minThreshold && value.r < minThreshold) {
 			result = 'blue';
 		} else {
 			result = 'white';
