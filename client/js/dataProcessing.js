@@ -2,8 +2,8 @@ define([ 'model/RobotState', 'strategy','jquery'],
 function(robotState, strategy) {
 	
 	var self;
-	var minThreshold = 130;
-	var maxThreshold = 150;
+	var minThreshold = 120;
+	var maxThreshold = 160;
 		
 	var DataManager = function() {
 		self = this;
@@ -22,11 +22,15 @@ function(robotState, strategy) {
 		if(data.status=="connected") {
 			console.log("Init sensor request");
 			
-			setInterval (sensorQuery , 500 );
+			this.interval;
+			if(this.interval === undefined){
+				console.log("Init query");
+				this.interval = setInterval (sensorQuery , 250 );
+			}
 		}
 		
 		var i = 0;
-		while (data.sensor_response[i]) {
+		while (data && data.sensor_response && data.sensor_response[i]) {
 		    	switch (data.sensor_response[i].name) {
 		    		case "color"        : proccessColorSensor(data.sensor_response[i].value);
                     		break;
@@ -70,11 +74,11 @@ function(robotState, strategy) {
 					    {
 						name : "color",
 						port : 3
-					    },
+					    }/*,
 					    {
 						name : "ultrasonic",
 						port : 1
-					    }
+					    }*/
 					]		
 				}
 			);
@@ -85,6 +89,16 @@ function(robotState, strategy) {
 		console.log(value);
 		var result = "";
 		
+		if(value.r < 100 || value.g < 100 || value.b < 100) {
+			if(value.r > value.g && value.r > value.b) {
+				result = 'red';
+			} else if(value.g > value.r && value.g > value.b) {
+				result = 'green';
+			} else if(value.b > value.g && value.b > value.r) {
+				result = 'blue';
+			}
+		}
+		/*
 		if(value.r > maxThreshold && value.g < minThreshold && value.b < minThreshold) {
 			result = 'red';
 		} else if(value.g > maxThreshold && value.r < minThreshold && value.b < minThreshold) {
@@ -93,7 +107,7 @@ function(robotState, strategy) {
 			result = 'blue';
 		} else {
 			result = 'white';
-		}
+		}*/
 		
 		if($('#left-line').val() == result) {
 			$('#lineDetection').text('Left line detected : turn right !!');

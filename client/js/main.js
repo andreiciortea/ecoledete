@@ -33,6 +33,14 @@ function(Server, DataManager, VirtualJoystickView) {
 	
 	$("#stop").on("click", function() {
 		console.log("STOP !");
+		var cmd = { motor_command: [
+					    {name: "both", action: "block", speed: 0}                   
+					]
+				};
+				
+				server.sendCommand(
+					cmd
+		    		);
 		server.ws.close();
 	});
 });
