@@ -20,7 +20,7 @@ function(robotState, strategy) {
 	
 	DataManager.prototype.dataProcessing = function(data) {		
 		if(data.status=="connected") {
-			console.log("Init sensor request");
+			//console.log("Init sensor request");
 			
 			this.interval;
 			if(this.interval === undefined){
